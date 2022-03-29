@@ -8,7 +8,7 @@
 
 resource "aws_vpc" "argo-workflows-vpc" {
   cidr_block = "10.0.0.0/16"
-
+  
   tags = tomap({
     "Name"                                      = "terraform-eks-node",
     "kubernetes.io/cluster/${var.cluster-name}" = "shared",
@@ -36,7 +36,7 @@ resource "aws_internet_gateway" "igw" {
     Name = "terraform-eks-argo-workflows"
   }
 }
-
+wsl --shutdown
 resource "aws_route_table" "route-table" {
   vpc_id = aws_vpc.argo-workflows-vpc.id
 
@@ -50,5 +50,6 @@ resource "aws_route_table_association" "route-table-association" {
   count = 2
 
   subnet_id      = aws_subnet.public-subnets.*.id[count.index]
+  # subnet_id      = aws_vpc.argo-workflows-vpc.public_subnets.*.id[count.index]
   route_table_id = aws_route_table.route-table.id
 }

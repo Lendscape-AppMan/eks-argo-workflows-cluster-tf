@@ -4,8 +4,21 @@
 #  * EC2 Security Group to allow networking traffic with EKS cluster
 #  * EKS Cluster
 #
-provider "aws" {
-  region = var.aws_region
+
+resource "aws_eks_cluster" "argo-workflows-cluster" {
+  name     = var.cluster-name
+  role_arn = aws_iam_role.iam-cluster-role.arn
+
+
+  vpc_config {
+    security_group_ids = [aws_security_group.argo-workflows-security-group.id]
+    subnet_ids         = aws_subnet.public-subnets[*].id
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.argo-workflows-AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.argo-workflows-AmazonEKSVPCResourceController,
+  ]
 }
 
 data "aws_availability_zones" "available" {}
@@ -72,17 +85,4 @@ resource "aws_security_group_rule" "argo-ingress-workstation-https" {
   type              = "ingress"
 }
 
-resource "aws_eks_cluster" "argo-workflows-cluster" {
-  name     = var.cluster-name
-  role_arn = aws_iam_role.iam-cluster-role.arn
 
-  vpc_config {
-    security_group_ids = [aws_security_group.argo-workflows-security-group.id]
-    subnet_ids         = aws_subnet.public-subnets[*].id
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.argo-workflows-AmazonEKSClusterPolicy,
-    aws_iam_role_policy_attachment.argo-workflows-AmazonEKSVPCResourceController,
-  ]
-}
